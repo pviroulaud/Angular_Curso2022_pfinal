@@ -15,10 +15,10 @@
             <div class="row">
                 <mat-form-field appearance="fill"  class="col-md-6">
                     <mat-label>Nombre</mat-label>
-                    <input type="text" formControlName="nombre" matInput [(ngModel)]="alumno.nombre">        
+                 
+                    <input type="text" formControlName="nombre" [(ngModel)]="alumno.nombre" matInput>        
                     <mat-error *ngIf="frm.controls['nombre'].errors?.['required']">El campo Nombre es requerido</mat-error>
                     <mat-error *ngIf="frm.controls['nombre'].errors?.['minlength']">El campo Nombre debe tener al menos 3 caracteres</mat-error>
-
                 </mat-form-field>
                 <mat-form-field appearance="fill"  class="col-md-6">
                     <mat-label>Apellido</mat-label>
@@ -30,7 +30,7 @@
             <div class="row">
                 <mat-form-field appearance="fill"  class="col-md-6">
                     <mat-label>DNI</mat-label>
-                    <input matInput  formControlName="dni" [(ngModel)]="alumno.dni">
+                    <input matInput type="number" formControlName="dni" [(ngModel)]="alumno.dni">
                     <mat-error *ngIf="frm.controls['dni'].errors?.['required']">El campo DNI es requerido</mat-error>
                     <mat-error *ngIf="frm.controls['dni'].errors?.['min'] || frm.controls['dni'].errors?.['max']">El n&uacute;mero de DNI no es v&aacute;lido</mat-error>
                 </mat-form-field>
@@ -66,7 +66,7 @@
         
                 <mat-form-field appearance="fill"  class="col-md-6">
                     <mat-label>Correo electr&oacute;nico</mat-label>
-                    <input matInput formControlName="email" [(ngModel)]="alumno.correoElectronico">
+                    <input matInput type="mail" formControlName="email" [(ngModel)]="alumno.correoElectronico">
                     <mat-error *ngIf="frm.controls['email'].errors?.['required']">El campo correo electr&oacute;nico es requerido</mat-error>
                     <mat-error *ngIf="frm.controls['email'].errors?.['pattern']">El correo electr&oacute;nico no tiene el formato requerido</mat-error>
                 </mat-form-field>
@@ -74,7 +74,7 @@
         
                 <mat-form-field appearance="fill" class="col-md-6">
                     <mat-label>Tel&eacute;fono</mat-label>
-                    <input matInput formControlName="telefono" [(ngModel)]="alumno.telefono">
+                    <input matInput type="tel" formControlName="telefono" [(ngModel)]="alumno.telefono">
                     </mat-form-field>
                         
             </div>

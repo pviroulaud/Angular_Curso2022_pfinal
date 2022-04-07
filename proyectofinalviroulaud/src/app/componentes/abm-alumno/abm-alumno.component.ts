@@ -1,7 +1,8 @@
-import { Component, OnInit,Inject } from '@angular/core';
+import { Component, OnInit,Inject,ViewChild } from '@angular/core';
 import { Alumno } from '../../clases/alumno';
-import {MAT_DIALOG_DATA} from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { FormControl, FormGroup, Validators, FormsModule } from '@angular/forms';
+
 
 @Component({
   selector: 'app-abm-alumno',
@@ -14,6 +15,8 @@ export class AbmAlumnoComponent implements OnInit {
   titulo:string="Editar";
   fechaMaxima:string="";
   edita:boolean=true;
+
+  
 
   frm:FormGroup=new FormGroup({
     legajo:new FormControl(''),
@@ -29,7 +32,8 @@ export class AbmAlumnoComponent implements OnInit {
 
   });
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data:Alumno) {
+  constructor(public refDialog: MatDialogRef<AbmAlumnoComponent>, 
+              @Inject(MAT_DIALOG_DATA) public data:Alumno) {
     if (data.id==0)
     {
       this.titulo="Nuevo";
@@ -67,11 +71,11 @@ export class AbmAlumnoComponent implements OnInit {
   {
     if (this.edita)
     {
-      console.log('Modificacion')
+      this.refDialog.close(this.alumno);
     }
     else
     {
-      console.log('Alta');
+      this.refDialog.close(this.alumno);
     }
     
   }
