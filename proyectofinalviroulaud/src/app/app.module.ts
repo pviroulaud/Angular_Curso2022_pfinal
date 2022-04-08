@@ -14,6 +14,7 @@ import { TitulosDirective } from './directivas/titulos.directive';
 import { ApellidonombrePipe } from './pipes/apellidonombre.pipe';
 import { EdadPipe } from './pipes/edad.pipe';
 import { ModalConfirmacionComponent } from './componentes/modal-confirmacion/modal-confirmacion.component';
+import { AlumnoService } from './servicios/alumno.service';
 
 
 
@@ -35,7 +36,7 @@ import { ModalConfirmacionComponent } from './componentes/modal-confirmacion/mod
     AppMaterialModule,
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [AlumnoService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

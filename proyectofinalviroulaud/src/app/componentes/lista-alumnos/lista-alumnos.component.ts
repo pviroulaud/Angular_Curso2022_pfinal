@@ -4,11 +4,13 @@ import { Alumno } from '../../clases/alumno';
 import { AbmAlumnoComponent } from '../abm-alumno/abm-alumno.component';
 import { ModalConfirmacionComponent} from '../modal-confirmacion/modal-confirmacion.component';
 import { MatTable} from '@angular/material/table'
+import { AlumnoService } from 'src/app/servicios/alumno.service';
 
 @Component({
   selector: 'app-lista-alumnos',
   templateUrl: './lista-alumnos.component.html',
-  styleUrls: ['./lista-alumnos.component.css','../../app.component.css']
+  styleUrls: ['./lista-alumnos.component.css','../../app.component.css'],
+  providers:[AlumnoService]
 })
 export class ListaAlumnosComponent implements OnInit {
 
@@ -17,7 +19,7 @@ export class ListaAlumnosComponent implements OnInit {
   nombreColumnas:string[]=["id","nombre","dni","email","telefono","editar"];
   listaAl: Alumno[]=[];
 
-  constructor(public dialog:MatDialog) { }
+  constructor(public dialog:MatDialog, private servicioAlumno:AlumnoService) { }
 
   ngOnInit(): void {
     this.obtenerAlumnos();
@@ -26,13 +28,8 @@ export class ListaAlumnosComponent implements OnInit {
 
   
   obtenerAlumnos(){
-    this.listaAl=[
-      new Alumno(1,"Alumno1","Apellido",new Date("11/17/1983",),0,"correo1@mail.com",123456,"1","direccion1"),
-      new Alumno(2,"Alumno2","Apellido2",new Date("01/01/2020"),0,"correo2@mail.com",456789,"0","direccion2"),
-      new Alumno(3,"Alumno3","Apellido3",new Date("01/01/2010"),0,"correo3@mail.com",123456,"2","direccion3"),
-      new Alumno(4,"Alumno4","Apellido4",new Date("01/01/2007"),0,"correo4@mail.com",456789,"2","direccion4"),
-      new Alumno(5,"Alumno5","Apellido5",new Date("01/01/2009"),0,"correo5@mail.com",789123,"1","direccion5"),
-    ];
+    this.listaAl=this.servicioAlumno.getAlumnos();
+
   }
 
 
@@ -40,8 +37,7 @@ export class ListaAlumnosComponent implements OnInit {
     const refDialog=this.dialog.open(AbmAlumnoComponent,{data:new Alumno(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion)});
 
     refDialog.afterClosed().subscribe(result => {
-      this.listaAl[this.listaAl.findIndex(x=>x.id==result.id)]=result;
-
+      this.servicioAlumno.updateAlumno(result);
       this.table.renderRows();
     });    
   }
@@ -52,9 +48,7 @@ export class ListaAlumnosComponent implements OnInit {
     refDialog.afterClosed().subscribe(result => {
       if(result!=null)
       {
-        result.id=this.obtenerSiguienteId()+1;
-
-        this.listaAl.push(result);
+        this.servicioAlumno.addAlumno(result);
         this.table.renderRows();
       }
       
@@ -68,18 +62,9 @@ export class ListaAlumnosComponent implements OnInit {
     refDialog.afterClosed().subscribe(result => {
       if(result)
       {
-        this.listaAl.splice(this.listaAl.findIndex(x=>x.id==al.id),1);
+        this.servicioAlumno.deleteAlumno(al);
         this.table.renderRows();// refresh de la tabla    
       }
     });
-  }
-
-  obtenerSiguienteId():number{
-    let max=0;
-    for(let i=0;i<this.listaAl.length;i++){
-      if (this.listaAl[i].id>max)
-        max=this.listaAl[i].id;
-    }
-    return max;
   }
 }
