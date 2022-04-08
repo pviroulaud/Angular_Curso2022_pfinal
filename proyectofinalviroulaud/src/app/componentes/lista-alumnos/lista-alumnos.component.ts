@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Alumno } from '../../clases/alumno';
 import { AbmAlumnoComponent } from '../abm-alumno/abm-alumno.component';
+import { ModalConfirmacionComponent} from '../modal-confirmacion/modal-confirmacion.component';
 import { MatTable} from '@angular/material/table'
 
 @Component({
@@ -61,8 +62,16 @@ export class ListaAlumnosComponent implements OnInit {
 
   }
   eliminarAlumno(al:Alumno){
-    this.listaAl.splice(this.listaAl.indexOf(al),1);
-    this.table.renderRows(); // refresh de la tabla    
+
+    const refDialog=this.dialog.open(ModalConfirmacionComponent,{data:{titulo:"Eliminar Alumno",subTitulo:"¿Esta seguro?"}});
+
+    refDialog.afterClosed().subscribe(result => {
+      if(result)
+      {
+        this.listaAl.splice(this.listaAl.findIndex(x=>x.id==al.id),1);
+        this.table.renderRows();// refresh de la tabla    
+      }
+    });
   }
 
   obtenerSiguienteId():number{

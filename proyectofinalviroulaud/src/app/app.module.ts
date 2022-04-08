@@ -13,6 +13,7 @@ import { ReactiveFormsModule} from '@angular/forms';
 import { TitulosDirective } from './directivas/titulos.directive';
 import { ApellidonombrePipe } from './pipes/apellidonombre.pipe';
 import { EdadPipe } from './pipes/edad.pipe';
+import { ModalConfirmacionComponent } from './componentes/modal-confirmacion/modal-confirmacion.component';
 
 
 
@@ -25,7 +26,8 @@ import { EdadPipe } from './pipes/edad.pipe';
     AbmAlumnoComponent,
     TitulosDirective,
     ApellidonombrePipe,
-    EdadPipe
+    EdadPipe,
+    ModalConfirmacionComponent
   ],
   imports: [
     BrowserModule,
