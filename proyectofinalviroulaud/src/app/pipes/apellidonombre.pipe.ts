@@ -1,12 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Alumno } from '../clases/alumno';
+import { Usuario } from '../clases/usuario';
 
 @Pipe({
   name: 'apellidonombre'
 })
 export class ApellidonombrePipe implements PipeTransform {
 
-  transform(value: Alumno, ): string {
+  transform(value: Usuario, ): string {
     let apeNombre:string="";
     if (value!=null)
     {

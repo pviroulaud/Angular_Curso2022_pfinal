@@ -1,5 +1,9 @@
-export class Alumno
+import { Curso } from "./curso";
+
+export class Usuario
 {
+    cursos:Curso[]=[];
+    
     id:number=0;
     nombre:string="Al";
     apellido:string="Ape";
@@ -9,6 +13,9 @@ export class Alumno
     telefono:number=0;
     sexo:string="";
     direccion:string="";
+    rol:number=4;
+    pass:string="123";
+    activo:boolean=true;
 
     constructor(id:number,nombre:string,
     apellido:string,
@@ -17,7 +24,8 @@ export class Alumno
     correoElectronico:string,
     telefono:number,
     sexo:string,
-    direccion:string)
+    direccion:string,
+    rol:number)
     {
         this.id=id;
         this.nombre=nombre;
@@ -27,7 +35,12 @@ export class Alumno
         this.correoElectronico=correoElectronico;
         this.telefono=telefono;
         this.sexo=sexo;
-        this.direccion=direccion;
+        this.direccion=direccion
+        this.rol=rol;
     }
- 
+
+    setContraseña(pass:string)
+    {
+        this.pass=pass;
+    }
 }
