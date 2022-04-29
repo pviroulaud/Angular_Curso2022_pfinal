@@ -1,52 +1,41 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
+import { AppRoutingModule } from './core/app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppMaterialModule } from './app-material/app-material.module';
-import { MenuComponent } from './componentes/menu/menu.component';
-import { TituloComponent } from './componentes/titulo/titulo.component';
+import { CoreModule } from './core/core.module';
 
-import { ReactiveFormsModule} from '@angular/forms';
-import { TitulosDirective } from './directivas/titulos.directive';
-import { ApellidonombrePipe } from './pipes/apellidonombre.pipe';
-import { EdadPipe } from './pipes/edad.pipe';
-import { ModalConfirmacionComponent } from './componentes/modal-confirmacion/modal-confirmacion.component';
-import { ListaCursosComponent } from './componentes/lista-cursos/lista-cursos.component';
-import { AbmCursoComponent } from './componentes/abm-curso/abm-curso.component';
-import { AbmUsuarioComponent } from './componentes/abm-usuario/abm-usuario.component';
-import { UsuarioService } from './servicios/usuario.service';
-import { ListaUsuariosComponent } from './componentes/lista-usuarios/lista-usuarios.component';
-import { ListaInscripcionesComponent } from './componentes/lista-inscripciones/lista-inscripciones.component';
-import { AbmInscripcionComponent } from './componentes/abm-inscripcion/abm-inscripcion.component';
-import { CursoService } from './servicios/curso.service';
-import { RolesService } from './servicios/roles.service';
-
+import { CursoService } from './core/servicios/curso.service';
+import { UsuarioService } from './core/servicios/usuario.service';
+import { RolesService } from './core/servicios/roles.service';
+import { AppMaterialModule } from './core/app.material.module';
+import { LoginService } from './core/servicios/login.service';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
   declarations: [
-    AppComponent,
-    MenuComponent,
-    TituloComponent,
-    TitulosDirective,
-    ApellidonombrePipe,
-    EdadPipe,
-    ModalConfirmacionComponent,
-    ListaCursosComponent,
-    AbmCursoComponent,
-    AbmUsuarioComponent,
-    ListaUsuariosComponent,
-    ListaInscripcionesComponent,
-    AbmInscripcionComponent
+    /* Declaracion de componentes */
+    AppComponent
   ],
   imports: [
+    /* Modulos que se importan para su utilizacion */
     BrowserModule,
+    HttpClientModule,
+    AppRoutingModule,
     BrowserAnimationsModule,
     AppMaterialModule,
-    ReactiveFormsModule
+    CoreModule
   ],
-  providers: [UsuarioService,CursoService,RolesService],//providers: [UsuarioService,CursoService,RolesService], hace que se cree una unica instancia de cada servicio en toda la aplicacion
+  providers: [
+    /* Servicios que se incorporan para su utilizacion (Singleton) */
+    
+    CursoService,
+    UsuarioService,
+    RolesService,
+    LoginService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
