@@ -11,7 +11,6 @@ import { UsuarioService } from 'src/app/core/servicios/usuario.service';
 import { AbmCursoComponent } from '../abm-curso/abm-curso.component';
 
 import { Curso } from 'src/app/core/clases/curso';
-import { LoginService } from 'src/app/core/servicios/login.service';
 
 //import { MatTable, MatTableDataSource } from 'src/app/core/app.material.module';
 //import { MatTable, MatTableDataSource } from 'src/app/core/core.module';
@@ -24,8 +23,7 @@ import { LoginService } from 'src/app/core/servicios/login.service';
 export class ListaCursosComponent implements OnInit, AfterViewInit {
   @ViewChild(MatTable, {static: true}) table!: MatTable<any>;
   dataSource:any;
-  rolActivo:number=0;
-  listaAlumnosCurso:Usuario[]=[];
+  
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   
@@ -33,10 +31,9 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
   nombreColumnas:string[]=["id","nombre","descripcion","totalClases","profesor","editar"];
   listaCur: Curso[]=[];
 
-  constructor(public dialog:MatDialog, private servicioCurso:CursoService, private servicioUsuario:UsuarioService,private servicioLogin: LoginService) { }
+  constructor(public dialog:MatDialog, private servicioCurso:CursoService, private servicioUsuario:UsuarioService) { }
 
   ngOnInit(): void {
-    this.rolActivo=this.servicioLogin.obtenerRolActivo();
     this.obtenerCursos();
     this.dataSource= new MatTableDataSource<Curso>(this.listaCur);
   }
@@ -50,45 +47,7 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
 
   }
 
-  listarAlumnos(cur:Curso)
-  {
-    this.servicioUsuario.getUsuariosPorRolPromise(1).then(res=>{
-      this.listaAlumnosCurso=[];
-      for (let i = 0; i < res.length; i++) {
-        for(let j=0;j<res[i].cursos.length;j++)
-        {
-          if(res[i].cursos[j].id==cur.id)
-          {
-            this.listaAlumnosCurso.push(res[i]);
-          }
-        }        
-      }
 
-      
-
-      this.servicioUsuario.getUsuariosPorRolPromise(2).then((data)=>{
-        const refDialog=this.dialog.open(AbmCursoComponent,{data:{datosCurso: new Curso(cur.id,cur.nombre,cur.descripcion,cur.cupo,cur.totalClases,cur.totalClases,cur.fechaInicio,cur.profesorId),
-                                                                  profesores:data,
-                                                                  listaAlumnos:this.listaAlumnosCurso,
-                                                                  soloLectura:true}});
-        refDialog.afterClosed().subscribe(result => {
-        let cur=  this.servicioCurso.updateCursoPromise(result)
-        if (cur!=null)
-        {
-          cur.then((datos)=>{
-            
-            this.obtenerCursos();
-  
-            this.dataSource.paginator = this.paginator;
-          })
-        }    
-        });    
-      });
-
-
-    });
-
-  }
   obtenerCursos(){
     
     this.servicioCurso.getCursosPromise().then((data)=>{
@@ -109,47 +68,28 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
 
   altaCurso()
   {
-    this.servicioUsuario.getUsuariosPorRolPromise(2).then((data)=>{
-      const refDialog=this.dialog.open(AbmCursoComponent,{data:{datosCurso:new Curso(0,"","",0,0,0,new Date(),0),
-                                                                profesores:data,
-                                                                listaAlumnos:[],
-                                                                soloLectura:false}});
-      
-      refDialog.afterClosed().subscribe(result => {
+    const refDialog=this.dialog.open(AbmCursoComponent,{data:{datosCurso:new Curso(0,"","",0,0,0,new Date(),0),
+                                                        profesores:this.servicioUsuario.getUsuariosPorRolId(2)}});
+
+    refDialog.afterClosed().subscribe(result => {
       if(result!=null)
       {
-      this.servicioCurso.addCursoPromise(result)
-      .then((datos)=>{
+        this.servicioCurso.addCurso(result);
+        this.obtenerCursos();
 
+        this.dataSource.paginator = this.paginator;
+      }
+    });
+  }
+  editarCurso(cur:Curso){
+    const refDialog=this.dialog.open(AbmCursoComponent,{data:{datosCurso: new Curso(cur.id,cur.nombre,cur.descripcion,cur.cupo,cur.totalClases,cur.totalClases,cur.fechaInicio,cur.profesorId),
+                                                              profesores:this.servicioUsuario.getUsuariosPorRolId(2)}});
+    refDialog.afterClosed().subscribe(result => {
+      this.servicioCurso.updateCurso(result);
       this.obtenerCursos();
 
       this.dataSource.paginator = this.paginator;
-      })
-      }
-      });
-    });
-
-    
-  }
-  editarCurso(cur:Curso){
-    this.servicioUsuario.getUsuariosPorRolPromise(2).then((data)=>{
-      const refDialog=this.dialog.open(AbmCursoComponent,{data:{datosCurso: new Curso(cur.id,cur.nombre,cur.descripcion,cur.cupo,cur.totalClases,cur.totalClases,cur.fechaInicio,cur.profesorId),
-                                                                profesores:data,
-                                                                listaAlumnos:[],
-                                                                soloLectura:false}});
-      refDialog.afterClosed().subscribe(result => {
-      let cur=  this.servicioCurso.updateCursoPromise(result)
-      if (cur!=null)
-      {
-        cur.then((datos)=>{
-          
-          this.obtenerCursos();
-
-          this.dataSource.paginator = this.paginator;
-        })
-      }    
-      });    
-    });
+    });    
   }
   eliminarCurso(cur:Curso){
     const refDialog=this.dialog.open(ModalConfirmacionComponent,{data:{titulo:"Eliminar Curso",subTitulo:"¿Esta seguro?"}});
@@ -157,13 +97,10 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
     refDialog.afterClosed().subscribe(result => {
       if(result)
       {
-        this.servicioCurso.deleteCursoPromise(cur)
-        .then((datos)=>{
-          console.log(datos);
-          this.obtenerCursos();
-
-          this.dataSource.paginator = this.paginator;
-        })
+        this.servicioCurso.deleteCurso(cur);
+        this.obtenerCursos();
+        
+        this.dataSource.paginator = this.paginator;
       }
     });
   }

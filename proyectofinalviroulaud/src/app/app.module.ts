@@ -10,8 +10,6 @@ import { CursoService } from './core/servicios/curso.service';
 import { UsuarioService } from './core/servicios/usuario.service';
 import { RolesService } from './core/servicios/roles.service';
 import { AppMaterialModule } from './core/app.material.module';
-import { LoginService } from './core/servicios/login.service';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -22,7 +20,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   imports: [
     /* Modulos que se importan para su utilizacion */
     BrowserModule,
-    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AppMaterialModule,
@@ -30,11 +27,9 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   ],
   providers: [
     /* Servicios que se incorporan para su utilizacion (Singleton) */
-    
     CursoService,
     UsuarioService,
-    RolesService,
-    LoginService
+    RolesService
   ],
   bootstrap: [AppComponent]
 })

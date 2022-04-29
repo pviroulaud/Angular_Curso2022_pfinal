@@ -1,6 +1,6 @@
 <div class="col-sm-12">
     <div class="col-sm-12">
-        <h2 appTitulos>{{tituloLista}}</h2>
+        <h2 appTitulos>{{tituloLista}} - {{tipoLista}}</h2>
     </div>
 
     <div class="col-sm-12 text-end">
@@ -49,8 +49,8 @@
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let element" class="text-end">
                     <mat-icon (click)="verAlumno(element)" style="cursor: pointer;">find_in_page</mat-icon>&nbsp;
-                    <mat-icon *ngIf="rolActivo==3" (click)="editarAlumno(element)" style="cursor: pointer;">edit</mat-icon>&nbsp;    
-                    <mat-icon *ngIf="rolActivo==3" (click)="eliminarAlumno(element)" style="cursor: pointer;">delete</mat-icon>                  
+                    <mat-icon (click)="editarAlumno(element)" style="cursor: pointer;">edit</mat-icon>&nbsp;    
+                    <mat-icon (click)="eliminarAlumno(element)" style="cursor: pointer;">delete</mat-icon>                  
                 </td>
               </ng-container>
             <tr mat-header-row *matHeaderRowDef="nombreColumnas"></tr>
