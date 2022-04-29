@@ -13,7 +13,8 @@ import { UsuarioService } from 'src/app/core/servicios/usuario.service';
 })
 export class AbmUsuarioComponent implements OnInit {
 
-  usuario:Usuario=new Usuario(0,"","",new Date(),0,"",0,"","",1);
+  usuario:Usuario=new Usuario(0,"","",new Date(),0,"",0,"","",1,undefined);
+  
   titulo:string="Editar";
   fechaMaxima:string="";
   edita:boolean=true;
@@ -52,10 +53,16 @@ export class AbmUsuarioComponent implements OnInit {
       this.usuario=data.datosUsr;
       this.roles=data.rolesPermitidos;
       this.soloLectura=data.soloLectura;
-      this.cursosDisponibles=this.servicioCursos.getCursos();
+      
+      //this.cursosDisponibles=this.servicioCursos.getCursos();
    }
 
   ngOnInit(): void {
+
+    this.servicioCursos.getCursosPromise().then(cursos=>{
+      this.cursosDisponibles=cursos;
+    });
+
     let hoy:Date=new Date();
     let dia:string="";
     let mes:string="";
@@ -71,25 +78,26 @@ export class AbmUsuarioComponent implements OnInit {
     else{
       mes = '0' + (hoy.getMonth()+1).toString();
     }
-    this.fechaMaxima=hoy.getFullYear().toString()+'-'+mes+'-'+dia  
+    this.fechaMaxima=(hoy.getFullYear()-1).toString()+'-'+mes+'-'+dia  
   }
 
   agregarCurso(){
 
-    let c=this.servicioCursos.getCurso(this.frm.value.cursos);
-
-    this.servicioUsuario.asignarCurso(this.usuario,c);
+    let c= this.cursosDisponibles.filter(x=>x.id==this.frm.value.cursos);// this.servicioCursos.getCurso(this.frm.value.cursos);
+    this.usuario.cursos.push(c[0]);
+    //this.servicioUsuario.asignarCurso(this.usuario,c);
     return false;
   }
   quitarCurso(alumnoId:number,cursoId:number){
 
-    this.servicioUsuario.desasignarCurso(this.usuario,this.servicioCursos.getCurso(cursoId)!);
+    this.usuario.cursos.splice(this.usuario.cursos.findIndex(x=>x.id==cursoId),1);
+    //this.servicioUsuario.desasignarCurso(this.usuario,this.servicioCursos.getCurso(cursoId)!);
 
   }
 
   aplicar()
   {
-
+    
     if (this.frm.valid)
     {
       this.refDialog.close(this.usuario);

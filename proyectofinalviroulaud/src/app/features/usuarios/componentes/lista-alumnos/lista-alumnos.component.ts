@@ -8,6 +8,8 @@ import { Usuario } from 'src/app/core/clases/usuario';
 import { ModalConfirmacionComponent } from 'src/app/core/componentes/modal-confirmacion/modal-confirmacion.component';
 import { RolesService } from 'src/app/core/servicios/roles.service';
 import { UsuarioService } from 'src/app/core/servicios/usuario.service';
+import { LoginService } from 'src/app/core/servicios/login.service';
+
 import { AbmUsuarioComponent } from '../abm-usuario/abm-usuario.component';
 
 @Component({
@@ -20,6 +22,7 @@ export class ListaAlumnosComponent implements OnInit , OnDestroy, AfterViewInit,
   @ViewChild(MatTable, {static: true}) table!: MatTable<any>;
   //@Input() 
   tipoLista:string="Alumno";
+   rolActivo:number=0;
 
   nombreColumnas:string[]=["id","nombre","dni","email","telefono","editar"];
   listaAL: Usuario[]=[];
@@ -38,6 +41,7 @@ export class ListaAlumnosComponent implements OnInit , OnDestroy, AfterViewInit,
   constructor(public dialog:MatDialog, 
     private servicioUsuario:UsuarioService, 
     private servicioRoles:RolesService,
+    private servicioLogin: LoginService,
     private ruta:ActivatedRoute) { 
       console.log('constructor');
      
@@ -58,33 +62,37 @@ export class ListaAlumnosComponent implements OnInit , OnDestroy, AfterViewInit,
   ngOnInit(): void {
     console.log('OnInit');
 
-    if (this.suscripcionAL!=undefined) {
-    this.suscripcionAL.unsubscribe();
-    }
-
-  
-    let rl=this.servicioRoles.getRolPorNombre(this.tipoLista);
-    this.rol=[{id:rl.id,nombre:rl.nombre}];
-    this.alumno$=this.servicioUsuario.getUsuariosOBS()
-    this.suscripcionAL=this.alumno$
-    .subscribe((datos)=>{
-      console.log("suscripcionALOBS",datos);
-      this.listaAL = datos.filter(al => al.rol==this.rol[0].id);
-
-      this.dsAL= new MatTableDataSource<Usuario>(this.listaAL);
-     
-    })
 
 
-      this.obtenerAlumnos();
+
+      //this.obtenerAlumnos();
     
-    
+      this.listar();
 
-
+      this.rolActivo=this.servicioLogin.obtenerRolActivo();
   }
 
+  listar()
+  {
+    if (this.suscripcionAL!=undefined) {
+      this.suscripcionAL.unsubscribe();
+      }
+  
+    
+      let rl=this.servicioRoles.getRolPorNombre(this.tipoLista);
+      this.rol=[{id:rl.id,nombre:rl.nombre}];
+      this.alumno$=this.servicioUsuario.getUsuariosOBS()
+      this.suscripcionAL=this.alumno$
+      .subscribe((datos)=>{
+        console.log("suscripcionALOBS",datos);
+        this.listaAL = datos.filter(al => al.rol==this.rol[0].id);
+  
+        this.dsAL= new MatTableDataSource<Usuario>(this.listaAL);
+        this.dsAL.paginator = this.paginator;
+      })
+  }
   ngAfterViewInit() {
-   this.dsAL.paginator = this.paginator;
+   //this.dsAL.paginator = this.paginator;
   }
 
   
@@ -96,51 +104,86 @@ export class ListaAlumnosComponent implements OnInit , OnDestroy, AfterViewInit,
   }
 
   verAlumno(al:Usuario){
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol,al.cursos),
                                     rolesPermitidos:this.rol,
                                     soloLectura:true}});
 
       refDialog.afterClosed().subscribe(result => {
-      this.servicioUsuario.updateUsuario(result);
-      this.table.renderRows();
+        let updAl=this.servicioUsuario.updateUsuario(result);
+        if (updAl!=null) {
+          updAl.subscribe(
+            data => {
+  
+              this.table.renderRows();
+  
+              this.listar();
+              // this.obtenerUsuarios();
+  
+              this.dsAL.paginator = this.paginator;
+            }
+          )
+        }
+      }); 
+      // this.table.renderRows();
 
-      //this.obtenerAlumnos();
+      // //this.obtenerAlumnos();
 
-      this.dsAL.paginator = this.paginator;
-      });    
+      // this.dsAL.paginator = this.paginator;
+        
   }
 
   editarAlumno(al:Usuario){
  
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol,al.cursos),
                                                               rolesPermitidos:this.rol,
                                                               soloLectura:false}});
 
     refDialog.afterClosed().subscribe(result => {
-      this.servicioUsuario.updateUsuario(result)
-      this.table.renderRows();
+      let updAl=this.servicioUsuario.updateUsuario(result);
+      if (updAl!=null) {
+        updAl.subscribe(
+          data => {
 
-      // this.obtenerAlumnos();
+            this.table.renderRows();
 
-       this.dsAL.paginator = this.paginator;
-    });    
+            this.listar();
+            // this.obtenerUsuarios();
+
+            this.dsAL.paginator = this.paginator;
+          }
+        )
+      }
+    }); 
   }
 
 
   altaAlumno()
   {
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(0,"","",new Date(),0,"",0,"","",1),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(0,"","",new Date(),0,"",0,"","",1,undefined),
                                                           rolesPermitidos:this.rol,
                                                           soloLectura:false}});
 
     refDialog.afterClosed().subscribe(result => {
       if(result!=null)
       {
-      this.servicioUsuario.addUsuario(result);
-        this.table.renderRows();
-        // this.obtenerAlumnos();
+        let addAL=this.servicioUsuario.addUsuario(result);
+        if (addAL!=null) {
+          addAL.subscribe(
+            data => {
 
-         this.dsAL.paginator = this.paginator;
+              this.table.renderRows();
+
+              this.listar();
+              // this.obtenerUsuarios();
+
+              this.dsAL.paginator = this.paginator;
+            }
+          )
+        }
+        // this.table.renderRows();
+        // // this.obtenerAlumnos();
+
+        //  this.dsAL.paginator = this.paginator;
       }
       
     });
@@ -153,10 +196,23 @@ export class ListaAlumnosComponent implements OnInit , OnDestroy, AfterViewInit,
     refDialog.afterClosed().subscribe(result => {
       if(result)
       {
-        this.servicioUsuario.deleteUsuario(al);
-        this.table.renderRows();
-        //this.obtenerAlumnos();
-         this.dsAL.paginator = this.paginator;  
+        let delAL=this.servicioUsuario.deleteUsuario(al);
+        if (delAL!=null) {
+          delAL.subscribe(
+            data => {
+
+              this.table.renderRows();
+
+              this.listar();
+              // this.obtenerUsuarios();
+
+              this.dsAL.paginator = this.paginator;
+            }
+          )
+        }
+        // this.table.renderRows();
+        // //this.obtenerAlumnos();
+        //  this.dsAL.paginator = this.paginator;  
       }
     });
   }

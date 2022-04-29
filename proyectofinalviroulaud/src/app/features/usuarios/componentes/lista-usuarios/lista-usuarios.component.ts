@@ -4,8 +4,10 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { Curso } from 'src/app/core/clases/curso';
 import { Usuario } from 'src/app/core/clases/usuario';
 import { ModalConfirmacionComponent } from 'src/app/core/componentes/modal-confirmacion/modal-confirmacion.component';
+import { LoginService } from 'src/app/core/servicios/login.service';
 import { RolesService } from 'src/app/core/servicios/roles.service';
 import { UsuarioService } from 'src/app/core/servicios/usuario.service';
 import { AbmUsuarioComponent } from '../abm-usuario/abm-usuario.component';
@@ -27,7 +29,8 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
   rol:any=[];
   //datasource!:any[];
   ds:any;
- 
+  rolActivo:number=0;
+  
   usuario$?:Observable<Usuario[]>;
   // urlPar?:Observable<ParamMap>;
   // suscripUrlPar:any;
@@ -38,6 +41,7 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
   constructor(public dialog:MatDialog, 
     private servicioUsuario:UsuarioService, 
     private servicioRoles:RolesService,
+    private servicioLogin: LoginService,
     private ruta:ActivatedRoute) { 
       console.log('constructor');
      
@@ -60,43 +64,24 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
     // if (this.suscripUrlPar!=undefined) {
     // this.suscripUrlPar.unsubscribe();
     // }
-    if (this.suscripcion!=undefined) {
-    this.suscripcion.unsubscribe();
-    }
-
-    // this.urlPar=this.ruta.paramMap;
-    // this.suscripUrlPar=this.urlPar.subscribe((params: ParamMap) => {
-    //   console.log('suscripcionURL',params);
-    // let tLista:string | null = params.get('tipoLista');
- 
-    // if(tLista==null){
-    //   this.tipoLista="Usuario";
-    // }else{
-    //   this.tipoLista=tLista;
-    // }
-   
-    // switch (this.tipoLista) {
-    //   case "Alumno":
-    //     this.tituloLista="Listado de Alumnos";
-    //     break;
-    // case "Administrador":
-    //     this.tituloLista="Listado de Administradores";
-    //     break;
-    // case "Profesor":
-    //     this.tituloLista="Listado de Profesores";
-    //     break;
-    //     case "Usuario":
-    //       this.tituloLista="Listado de Usuarios";
-    //       this.rol=this.servicioRoles.getRoles();
-    //     break;
-
-    //   default:
-    //     this.tituloLista="Listado";
-    //     break;
-    // }
     
 
-    // });
+    this.listar();
+
+
+      //this.obtenerUsuarios();
+    
+    
+      this.rolActivo=this.servicioLogin.obtenerRolActivo();
+      console.log('rolActivo', this.rolActivo);
+  }
+
+  listar()
+  {
+    if (this.suscripcion!=undefined) {
+      this.suscripcion.unsubscribe();
+      }
+
     let rl=this.servicioRoles.getRolPorNombre(this.tipoLista);
     this.rol=[{id:rl.id,nombre:rl.nombre}];
     this.usuario$=this.servicioUsuario.getUsuariosOBS()
@@ -107,19 +92,12 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
       //this.datasource = this.listaUS;
       
       this.ds= new MatTableDataSource<Usuario>(this.listaUS);
-     
+      this.ds.paginator = this.paginator;
     })
-
-
-      this.obtenerUsuarios();
-    
-    
-
-
   }
 
   ngAfterViewInit() {
-   this.ds.paginator = this.paginator;
+   //this.ds.paginator = this.paginator;
   }
 
   
@@ -138,51 +116,83 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
   }
 
   verUsuario(al:Usuario){
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol,al.cursos),
                                     rolesPermitidos:this.servicioRoles.getRoles(),
                                     soloLectura:true}});
 
       refDialog.afterClosed().subscribe(result => {
-      this.servicioUsuario.updateUsuario(result);
-      this.table.renderRows();
-
-      //this.obtenerUsuarios();
-
-      this.ds.paginator = this.paginator;
+        let updUsr=this.servicioUsuario.updateUsuario(result);
+        if (updUsr!=null) {
+          updUsr.subscribe(
+            data => {
+  
+              this.table.renderRows();
+  
+              this.listar();
+              // this.obtenerUsuarios();
+  
+              this.ds.paginator = this.paginator;
+            }
+          )
+        }
       });    
   }
 
   editarUsuario(al:Usuario){
  
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(al.id,al.nombre,al.apellido,al.fechaNacimiento,al.dni,al.correoElectronico,al.telefono,al.sexo,al.direccion,al.rol,al.cursos),
                                                               rolesPermitidos:this.servicioRoles.getRoles(),
                                                               soloLectura:false}});
 
     refDialog.afterClosed().subscribe(result => {
-      this.servicioUsuario.updateUsuario(result)
-      this.table.renderRows();
+      let updUsr=this.servicioUsuario.updateUsuario(result);
+      if (updUsr!=null) {
+        updUsr.subscribe(
+          data => {
+            console.log("data Update",data);
+            this.table.renderRows();
 
-      // this.obtenerUsuarios();
+            this.listar();
+            // this.obtenerUsuarios();
 
-       this.ds.paginator = this.paginator;
+            this.ds.paginator = this.paginator;
+          }
+        )
+      }
+      
+
     });    
   }
 
 
   altaUsuario()
   {
-    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(0,"","",new Date(),0,"",0,"","",1),
+    const refDialog=this.dialog.open(AbmUsuarioComponent,{data:{datosUsr: new Usuario(0,"","",new Date(),0,"",0,"","",1,undefined),
                                                           rolesPermitidos:this.servicioRoles.getRoles(),
                                                           soloLectura:false}});
 
     refDialog.afterClosed().subscribe(result => {
       if(result!=null)
       {
-      this.servicioUsuario.addUsuario(result);
-        this.table.renderRows();
-        // this.obtenerUsuarios();
+        let addUsr=this.servicioUsuario.addUsuario(result);
 
-         this.ds.paginator = this.paginator;
+        if (addUsr!=null) {
+          addUsr.subscribe(
+            data => {
+
+              this.table.renderRows();
+
+              this.listar();
+              // this.obtenerUsuarios();
+
+              this.ds.paginator = this.paginator;
+            }
+          )
+        }
+        // this.table.renderRows();
+        // // this.obtenerUsuarios();
+
+        //  this.ds.paginator = this.paginator;
       }
       
     });
@@ -195,10 +205,25 @@ export class ListaUsuariosComponent implements OnInit , OnDestroy, AfterViewInit
     refDialog.afterClosed().subscribe(result => {
       if(result)
       {
-        this.servicioUsuario.deleteUsuario(al);
-        this.table.renderRows();
-        //this.obtenerUsuarios();
-         this.ds.paginator = this.paginator;  
+        let delUsr=this.servicioUsuario.deleteUsuario(al);
+
+        if (delUsr!=null) {
+          delUsr.subscribe(
+            data => {
+
+              this.table.renderRows();
+
+              this.listar();
+              // this.obtenerUsuarios();
+
+              this.ds.paginator = this.paginator;
+            }
+          )
+        }
+
+        // this.table.renderRows();
+        // //this.obtenerUsuarios();
+        //  this.ds.paginator = this.paginator;  
       }
     });
   }
