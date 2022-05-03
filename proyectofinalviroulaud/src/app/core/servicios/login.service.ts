@@ -30,25 +30,42 @@ export class LoginService {
 
   authUsuario(usuario:string,pass:string)
   {
-    let lista =this.http.get<Usuario[]>(`${this.API_URL}/usuario`, {
-      headers: new HttpHeaders({
-        'content-type': 'application/json'
-      })
-    }).pipe(catchError(this.manejoError)).subscribe((data)=>{
+    // let lista =this.http.get<Usuario[]>(`${this.API_URL}/usuario`, {
+    //   headers: new HttpHeaders({
+    //     'content-type': 'application/json'
+    //   })
+    // }).pipe(catchError(this.manejoError))
+    this.llamadaLogin(usuario,pass)
+    .subscribe((data)=>{
 
+      this.validarDatosUsuario(data,usuario,pass);
       
-      let usr=data.find(x=>x.correoElectronico==usuario && x.pass==pass);
-      if (usr!=null)
-      {
-        if ((usr.rol==3) || (usr.rol==4)) // Solo se permite el ingreso a Administradores y Usuarios (Alumnos y Profesores no tienen acceso)
-        {
-          console.log("Usuario Actual",usr);
-          this.setUsuarioActual(usr);
-        }
-      }
       
     });
 
+  }
+
+  validarDatosUsuario(data:Usuario[],usuario:string,pass:string)
+  {
+    let usr=data.find(x=>x.correoElectronico==usuario && x.pass==pass);
+    if (usr!=null)
+    {
+      if ((usr.rol==3) || (usr.rol==4)) // Solo se permite el ingreso a Administradores y Usuarios (Alumnos y Profesores no tienen acceso)
+      {
+        console.log("usuario obtenido de la llamada",usr);
+        this.setUsuarioActual(usr);
+      }
+    }
+    return usr;
+  }
+
+  llamadaLogin(usuario:string,pass:string)
+  {
+    return this.http.get<Usuario[]>(`${this.API_URL}/usuario`, {
+      headers: new HttpHeaders({
+        'content-type': 'application/json'
+      })
+    }).pipe(catchError(this.manejoError))
   }
 
   doLogin(usuario:string,pass:string)
@@ -66,7 +83,7 @@ export class LoginService {
   }
   
   setUsuarioActual(usuario: Usuario){
-    console.log("Usuario Actual",usuario);
+    //console.log("Usuario Actual",usuario);
     this.usuarioLogueado = usuario;
     this.rolActivo=usuario.rol;
     this.sesionActiva=true;

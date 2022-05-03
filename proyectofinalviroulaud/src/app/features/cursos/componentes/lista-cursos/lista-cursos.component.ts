@@ -30,7 +30,7 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   
-  nombreColumnas:string[]=["id","nombre","descripcion","totalClases","profesor","editar"];
+  nombreColumnas:string[]=["id","nombre","descripcion","totalClases","editar"];
   listaCur: Curso[]=[];
 
   constructor(public dialog:MatDialog, private servicioCurso:CursoService, private servicioUsuario:UsuarioService,private servicioLogin: LoginService) { }
@@ -47,7 +47,15 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
 
   obtenerProfesor(id:number):Usuario{
     return this.servicioUsuario.getUsuario(id)!;
-
+    // this.servicioUsuario.getUsuarioPorId(id).then((data)=>{
+    //   if (data==undefined){
+    //     return new Usuario(0,"","",new Date(),1,"",1,"","",0);
+    //   }
+    //   else{
+    //     return data;
+    //   }
+    // });
+    // return new Usuario(0,"","",new Date(),1,"",1,"","",0);
   }
 
   listarAlumnos(cur:Curso)
@@ -92,19 +100,27 @@ export class ListaCursosComponent implements OnInit, AfterViewInit {
   obtenerCursos(){
     
     this.servicioCurso.getCursosPromise().then((data)=>{
-      this.listaCur=data;
-      this.dataSource= new MatTableDataSource<Curso>(this.listaCur);
-      this.table.renderRows();
-
-      //this.obtenerUsuarios();
-
-      this.dataSource.paginator = this.paginator;
+      // for (let i = 0; i < data.length; i++) {
+      //   data[i].profesor=this.obtenerProfesor(data[i].profesorId);
+      // }
+      this.cargarGrilla(data);
     })
     .catch((err)=>{
       console.log(err);
     });
 
     //this.listaCur=this.servicioCurso.getCursos();
+  }
+
+  cargarGrilla(datosGrilla:Curso[])
+  {
+    this.listaCur=datosGrilla;
+    this.dataSource= new MatTableDataSource<Curso>(this.listaCur);
+    this.table.renderRows();
+
+    //this.obtenerUsuarios();
+
+    this.dataSource.paginator = this.paginator;
   }
 
   altaCurso()

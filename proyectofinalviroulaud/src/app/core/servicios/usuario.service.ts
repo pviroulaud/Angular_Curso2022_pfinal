@@ -81,6 +81,26 @@ export class UsuarioService {
   getUsuario(id:number) {
     return this.listaUSR.find(usuario => usuario.id == id);
   }
+
+  getUsuarioPorId(id:number) {
+    let p = new Promise<Usuario[]>((resolve, reject) => {
+      const error = false;
+
+      this.http.get<Usuario[]>(`${this.API_URL}/usuario`, {
+        headers: new HttpHeaders({
+          'content-type': 'application/json'
+        })
+      })
+      .subscribe(
+        (data) => {
+          resolve(data.filter(usuario => usuario.id == id));
+        }
+      );
+    });
+
+    return p;
+  }
+
   getUsuariosPorRolPromise(rolId:number) {
 
     let p = new Promise<Usuario[]>((resolve, reject) => {

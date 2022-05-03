@@ -8,6 +8,7 @@ export class Curso
     clasesSemanales : number = 0;
     totalClases:number=0;
     profesorId:number=0;
+    profesor:Usuario|undefined;
     fechaInicio:Date=new Date();
     cupo:number=0;
     activo:boolean=true;
@@ -26,6 +27,7 @@ export class Curso
     }
     setProfesor(profesor:Usuario){
         this.profesorId=profesor.id;
+        this.profesor=profesor;
     }
     setProfesorId(id:number){
         this.profesorId=id;
